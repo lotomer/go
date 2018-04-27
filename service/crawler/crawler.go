@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"../../http/router"
 	"github.com/julienschmidt/httprouter"
-	"github.com/lotomer/go/http/router"
 )
 
 func init() {

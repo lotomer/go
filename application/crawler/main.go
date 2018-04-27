@@ -3,8 +3,8 @@ package main
 import (
 	"net/http"
 
-	_ "github.com/lotomer/go/crawler"
-	"github.com/lotomer/go/http/router"
+	_ "../../crawler"
+	"../../http/router"
 )
 
 func main() {

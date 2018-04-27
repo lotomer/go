@@ -1,16 +1,16 @@
-package crawler
+package datastore
 
 import (
 	"fmt"
 	"net/http"
 
+	"../../http/router"
 	"github.com/julienschmidt/httprouter"
-	"github.com/lotomer/go/http/router"
 )
 
 func init() {
 	fmt.Println("Start init crawler2...")
-	router.DefaultRouter.GET("/crawl/task2/:taskName", crawlTask2Handle)
+	router.DefaultRouter.GET("/datastore/task2/:taskName", crawlTask2Handle)
 }
 
 func crawlTask2Handle(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {

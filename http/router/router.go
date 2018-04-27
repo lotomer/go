@@ -5,12 +5,8 @@ import (
 )
 
 // DefaultRouter is static
-var DefaultRouter = new()
+var DefaultRouter = &router{*httprouter.New()}
 
 type router struct {
 	httprouter.Router
-}
-
-func new() *router {
-	return &router{*httprouter.New()}
 }
