@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"../../http/router"
@@ -9,11 +10,12 @@ import (
 )
 
 func init() {
-	fmt.Println("Start init crawler...")
-	router.DefaultRouter.GET("/crawl/task/:taskName", crawlTaskHandle)
+	crawlTaskURIPattern := "/crawl/task/:taskName"
+	router.DefaultRouter.GET(crawlTaskURIPattern, crawlTaskHandle)
+	log.Printf("Handle %s by %s", crawlTaskURIPattern, "crawlTaskHandle")
 }
 
 func crawlTaskHandle(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
-	fmt.Println("crawl task handle...")
+	log.Println("crawl task handle...")
 	fmt.Fprintf(w, "start %s %s", "crawler", ps.ByName("taskName"))
 }
