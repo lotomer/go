@@ -7,14 +7,37 @@ import (
 	"os"
 
 	//_ "../../crawler/service"
+	"flag"
+
 	"../../datastore"
 	_ "../../datastore/service"
 	"../../http/router"
 	_ "github.com/go-sql-driver/mysql"
 )
 
+// NoneWriter 空
+type NoneWriter struct {
+}
+
+func (w *NoneWriter) Write(p []byte) (int, error) {
+	return 0, nil
+}
+
+var nolog = flag.Bool("nolog", false, "Without log")
+var help = flag.Bool("h", false, "Help info")
+
 func main() {
-	log.SetPrefix("[DataStore] ")
+	flag.Parse()
+	if *help {
+		flag.Usage()
+		os.Exit(0)
+	}
+	if *nolog {
+		var noneWriter NoneWriter
+		log.SetOutput(&noneWriter)
+	} else {
+		log.SetPrefix("[DataStore] ")
+	}
 	dbStr := `{
 		"port":3306,
 		"host":"vps2.tomstools.org",
