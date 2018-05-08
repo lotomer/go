@@ -6,15 +6,15 @@ import (
 	"net/http"
 	"os"
 
-	_ "../../crawler/service"
+	//_ "../../crawler/service"
 	"../../datastore"
-	//_ "../../datastore/service"
+	_ "../../datastore/service"
 	"../../http/router"
 	_ "github.com/go-sql-driver/mysql"
 )
 
 func main() {
-	log.SetPrefix("[Crawler] ")
+	log.SetPrefix("[DataStore] ")
 	dbStr := `{
 		"port":3306,
 		"host":"vps2.tomstools.org",
@@ -43,5 +43,5 @@ func main() {
 	fmt.Println(datastore.DataSources)
 	fmt.Println(datastore.DataSourcePool)
 	fmt.Println(datastore.DataConfigs)
-	http.ListenAndServe(":8081", router.DefaultRouter)
+	http.ListenAndServe(":8080", router.DefaultRouter)
 }

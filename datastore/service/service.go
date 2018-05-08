@@ -1,7 +1,6 @@
 package datastore
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -12,18 +11,18 @@ import (
 )
 
 func init() {
-	dataStoreURIPattern := "/datastore/:dataId"
+	dataStoreURIPattern := "/datastore/service/:dataId"
 	router.DefaultRouter.GET(dataStoreURIPattern, dataStoreHandle)
 	log.Printf("Handle %s by %s", dataStoreURIPattern, "dataStoreHandle")
 }
 
 func dataStoreHandle(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
-	log.Println("datastore handle...")
 	dataID := ps.ByName("dataId")
 
 	if config, ok := datastore.DataConfigPool[dataID]; ok {
 		// 找到了该API，则继续
 		key := req.URL.Query().Get("key")
+		log.Printf("start %s %s, key=%s", "datastore", dataID, key)
 		// 1、校验key
 		// 2、校验key是否有该API权限
 		// 3、校验查询参数
@@ -39,9 +38,39 @@ func dataStoreHandle(w http.ResponseWriter, req *http.Request, ps httprouter.Par
 				return
 			}
 		}
-		fmt.Fprintln(w, config)
-		fmt.Fprintf(w, "start %s %s, key=%s", "datastore", dataID, key)
+		// 4、执行查询
+		sql, db := config.Options.SQL, config.DB
+		cols, datas, err := datastore.LoadDatasFromDB(db, sql)
+		if err != nil {
+			response.FailJSON(w, "查询失败："+err.Error())
+			return
+		}
+		log.Printf("Execute %s's SQL: %s", dataID, sql)
+
+		// 5、校验返回结果
+		returnCols := make(map[string]int)
+		for _, v := range config.Returns {
+			returnCols[v.Name] = -1
+		}
+		for i := range cols {
+			if _, ok := returnCols[cols[i]]; ok {
+				// 需要返回，则提取字段值，设置为索引号
+				returnCols[cols[i]] = i
+			}
+		}
+		resultDatas := []map[string]interface{}{}
+		for i := range datas {
+			data := make(map[string]interface{})
+			for k, v := range returnCols {
+				data[k] = datas[i][v]
+			}
+			resultDatas = append(resultDatas, data)
+		}
+		//var resultDatas = make([]map[string]interface{}, datas.Len())
+		response.SuccessJSON(w, resultDatas)
+	} else {
+		log.Printf("API不存在：%s", dataID)
+		response.FailJSON(w, "API不存在："+dataID)
 	}
 
-	fmt.Fprintf(w, "start %s %s", "datastore", dataID)
 }
