@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -63,8 +62,8 @@ func main() {
 		}
 	}()
 	datastore.Use(db)
-	fmt.Println(datastore.DataSources)
-	fmt.Println(datastore.DataSourcePool)
-	fmt.Println(datastore.DataConfigs)
+	log.Print(datastore.DataSources)
+	log.Print(datastore.DataSourcePool)
+	log.Print(datastore.DataConfigs)
 	http.ListenAndServe(":8080", router.DefaultRouter)
 }
