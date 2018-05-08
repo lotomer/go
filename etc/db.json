@@ -1,0 +1,11 @@
+{
+    "port":3306,
+    "host":"vps2.tomstools.org",
+    "dbname":"of",
+    "username":"mysql",
+    "password":"mysql123",
+    "maxPoolSize":10,
+    "maxIdleSize":2,
+    "type":"mysql",
+    "urlTemplate":"${username}:${password}@tcp(${host}:${port})/${dbname}?charset=utf8"
+}

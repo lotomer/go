@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -24,6 +25,7 @@ func (w *NoneWriter) Write(p []byte) (int, error) {
 
 var nolog = flag.Bool("nolog", false, "Without log")
 var help = flag.Bool("h", false, "Help info")
+var dbfile = flag.String("dbfile", "", "The database config file(json)")
 
 func main() {
 	flag.Parse()
@@ -37,22 +39,32 @@ func main() {
 	} else {
 		log.SetPrefix("[DataStore] ")
 	}
-	dbStr := `{
-		"port":3306,
-		"host":"vps2.tomstools.org",
-		"dbname":"of",
-		"username":"mysql",
-		"password":"mysql123",
-		"maxPoolSize":10,
-		"maxIdleSize":2,
-		"type":"mysql",
-		"urlTemplate":"${username}:${password}@tcp(${host}:${port})/${dbname}?charset=utf8"
-		}`
-
+	var dbStr string
+	if *dbfile == "" {
+		for _, fname := range []string{"./db.json", "./etc/db.json", "/etc/db.json", "../etc/db.json", "../../etc/db.json"} {
+			buff, err := ioutil.ReadFile(fname)
+			if err != nil {
+				log.Print(err)
+			} else {
+				log.Printf("Read database config success from %s", fname)
+				dbStr = string(buff)
+				break
+			}
+		}
+	} else {
+		buff, err := ioutil.ReadFile(*dbfile)
+		if err != nil {
+			panic(err)
+		}
+		log.Printf("Read database config success from %s", *dbfile)
+		dbStr = string(buff)
+	}
+	if dbStr == "" {
+		log.Fatal("Read database config failed!")
+	}
 	db, err := datastore.GenerateDBWithJSONStr(dbStr)
 	if err != nil {
 		log.Fatal(err)
-		os.Exit(-2)
 	}
 	defer db.Close()
 	defer func() {

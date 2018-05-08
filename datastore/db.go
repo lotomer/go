@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"log"
 	"strconv"
 	"strings"
@@ -44,7 +45,7 @@ func GenerateDBWithJSONStr(dbinfoStr string) (*sql.DB, error) {
 	dbInfo := &DBInfo{}
 	err := json.Unmarshal([]byte(dbinfoStr), dbInfo)
 	if err != nil {
-		return nil, err
+		return nil, errors.New(err.Error() + ": " + dbinfoStr)
 	}
 	return GenerateDB(dbInfo)
 }
