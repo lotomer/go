@@ -7,13 +7,35 @@ import (
 )
 
 // LoadDatasFromDB 根据sql获取所有数据
-func LoadDatasFromDB(db *sql.DB, sqlStr string) ([]string, [][]interface{}, error) {
-	rows, err := db.Query(sqlStr)
-	if err != nil {
-		//log.Fatalf("Query failed: %s",err)
-		return nil, nil, err
+func LoadDatasFromDB(db *sql.DB, sqlStr string, args ...interface{}) ([]string, [][]interface{}, error) {
+	var (
+		rows *sql.Rows
+		err  error
+	)
+	if len(args) > 0 {
+		// 有附加参数，则先进行预编译，然后再执行
+		stmt, err := db.Prepare(sqlStr)
+		if err != nil {
+			return nil, nil, err
+		}
+		defer stmt.Close()
+		rows, err = stmt.Query(args)
+		if err != nil {
+			//log.Fatalf("Query failed: %s",err)
+			return nil, nil, err
+		}
+		defer rows.Close()
+
+	} else {
+		// 没有附加参数，则直接执行
+		rows, err = db.Query(sqlStr)
+		if err != nil {
+			//log.Fatalf("Query failed: %s",err)
+			return nil, nil, err
+		}
+		defer rows.Close()
 	}
-	defer rows.Close()
+
 	cols, err := rows.Columns()
 	if err != nil {
 		return nil, nil, err

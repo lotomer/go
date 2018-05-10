@@ -57,13 +57,16 @@ type QueryParameter struct {
 
 // InitDataConfig 主动初始化
 func InitDataConfig() {
-	DataConfigPool = make(map[string]DataConfig)
+	dataConfigPool := make(map[string]DataConfig)
 	for id, config := range DataConfigs {
 		dc := DataConfig{}
 		dc.DB = DataSourcePool[config.DsID]
 		json.Unmarshal([]byte(config.Options), &dc.Options)
 		json.Unmarshal([]byte(config.QueryParam), &dc.QueryParam)
 		json.Unmarshal([]byte(config.Returns), &dc.Returns)
-		DataConfigPool[id] = dc
+		dataConfigPool[id] = dc
 	}
+
+	// 最后再切换
+	DataConfigPool = dataConfigPool
 }

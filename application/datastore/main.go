@@ -9,6 +9,7 @@ import (
 	"flag"
 
 	"../../common"
+	"../../privilege"
 
 	"../../datastore"
 	_ "../../datastore/service"
@@ -66,6 +67,7 @@ func main() {
 			db.Close()
 		}
 	}()
+	privilege.Use(db)
 	datastore.Use(db)
 	log.Print(datastore.DataSources)
 	log.Print(datastore.DataSourcePool)

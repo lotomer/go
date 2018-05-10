@@ -9,8 +9,10 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+var thisServiceURIRoot = "/crawl/task/"
+
 func init() {
-	crawlTaskURIPattern := "/crawl/task/:taskName"
+	crawlTaskURIPattern := thisServiceURIRoot + ":taskName"
 	router.DefaultRouter.GET(crawlTaskURIPattern, crawlTaskHandle)
 	log.Printf("Handle %s by %s", crawlTaskURIPattern, "crawlTaskHandle")
 }

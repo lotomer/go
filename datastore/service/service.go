@@ -8,11 +8,14 @@ import (
 	"../../datastore"
 	"../../http/response"
 	"../../http/router"
+	"../../privilege"
 	"github.com/julienschmidt/httprouter"
 )
 
+var thisServiceURIRoot = "/datastore/service/"
+
 func init() {
-	dataStoreURIPattern := "/datastore/service/:dataId"
+	dataStoreURIPattern := thisServiceURIRoot + ":dataId"
 	router.DefaultRouter.GET(dataStoreURIPattern, dataStoreHandle)
 	log.Printf("Handle %s by %s", dataStoreURIPattern, "dataStoreHandle")
 }
@@ -25,8 +28,16 @@ func dataStoreHandle(w http.ResponseWriter, req *http.Request, ps httprouter.Par
 		key := req.URL.Query().Get("key")
 		log.Printf("start %s %s, key=%s", "datastore", dataID, key)
 		// 1、校验key
-
+		user, err := privilege.GetUserByKey(key)
+		if err != nil {
+			response.FailJSON(w, err.Error())
+			return
+		}
 		// 2、校验key是否有该API权限
+		if err = privilege.CheckAPIPrivilege(user, thisServiceURIRoot+dataID); err != nil {
+			response.FailJSON(w, err.Error())
+			return
+		}
 
 		// 3、校验查询参数
 		var queryParam = make(map[string]string)

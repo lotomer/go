@@ -57,8 +57,8 @@ func Use(db *sql.DB) {
 	if err != nil {
 		panic(err)
 	}
-	DataSourcePool = make(map[int]*sql.DB)
-	DataSourcePool[ThisDataSourceID] = db
+	dataSourcePool := make(map[int]*sql.DB)
+	dataSourcePool[ThisDataSourceID] = db
 	var dsIDs bytes.Buffer
 	var dbTemp *sql.DB
 	dsIDs.WriteString(strconv.Itoa(ThisDataSourceID))
@@ -70,8 +70,12 @@ func Use(db *sql.DB) {
 			log.Fatalf("Create DB failed: %s", err)
 			continue
 		}
-		DataSourcePool[id] = dbTemp
+		dataSourcePool[id] = dbTemp
 	}
+
+	// 最后再切换
+	DataSourcePool = dataSourcePool
+
 	DataConfigs, err = loadDataConfigFromDB(db, dsIDs.String())
 	if err != nil {
 		panic(err)
