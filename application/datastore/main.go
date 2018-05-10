@@ -6,22 +6,15 @@ import (
 	"net/http"
 	"os"
 
-	//_ "../../crawler/service"
 	"flag"
+
+	"../../common"
 
 	"../../datastore"
 	_ "../../datastore/service"
 	"../../http/router"
 	_ "github.com/go-sql-driver/mysql"
 )
-
-// NoneWriter 空
-type NoneWriter struct {
-}
-
-func (w *NoneWriter) Write(p []byte) (int, error) {
-	return 0, nil
-}
 
 var nolog = flag.Bool("nolog", false, "Without log")
 var help = flag.Bool("h", false, "Help info")
@@ -34,7 +27,7 @@ func main() {
 		os.Exit(0)
 	}
 	if *nolog {
-		var noneWriter NoneWriter
+		var noneWriter common.NoneWriter
 		log.SetOutput(&noneWriter)
 	} else {
 		log.SetPrefix("[DataStore] ")

@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"../../common"
 	"../../datastore"
 	"../../http/response"
 	"../../http/router"
@@ -24,10 +25,8 @@ func dataStoreHandle(w http.ResponseWriter, req *http.Request, ps httprouter.Par
 		key := req.URL.Query().Get("key")
 		log.Printf("start %s %s, key=%s", "datastore", dataID, key)
 		// 1、校验key
+
 		// 2、校验key是否有该API权限
-		// 3、校验查询参数
-		// 4、执行查询
-		// 5、校验返回结果
 
 		// 3、校验查询参数
 		var queryParam = make(map[string]string)
@@ -40,7 +39,7 @@ func dataStoreHandle(w http.ResponseWriter, req *http.Request, ps httprouter.Par
 		}
 		// 4、执行查询
 		sql, db := config.Options.SQL, config.DB
-		cols, datas, err := datastore.LoadDatasFromDB(db, sql)
+		cols, datas, err := common.LoadDatasFromDB(db, sql)
 		if err != nil {
 			response.FailJSON(w, "查询失败："+err.Error())
 			return
