@@ -111,13 +111,16 @@ func loadDataConfigFromDB(db *sql.DB, dsIDs string) (map[string]dataConfig, erro
 		return nil, err
 	}
 	defer rows.Close()
+	var queryParam sql.NullString
+
 	dataConfigs := make(map[string]dataConfig)
 	for rows.Next() {
 		dc := dataConfig{}
-		err = rows.Scan(&dc.ID, &dc.Name, &dc.QueryParam, &dc.Returns, &dc.Options, &dc.DsID)
+		err = rows.Scan(&dc.ID, &dc.Name, &queryParam, &dc.Returns, &dc.Options, &dc.DsID)
 		if err != nil {
 			return nil, err
 		}
+		dc.QueryParam = queryParam.String
 		dataConfigs[dc.ID] = dc
 	}
 	return dataConfigs, nil

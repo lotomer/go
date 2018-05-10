@@ -1,7 +1,7 @@
 {
     "port":3306,
-    "host":"s1",
-    "dbname":"of_lcm",
+    "host":"vps2.tomstools.org",
+    "dbname":"of",
     "username":"mysql",
     "password":"mysql123",
     "maxPoolSize":10,

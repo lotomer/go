@@ -19,7 +19,7 @@ func LoadDatasFromDB(db *sql.DB, sqlStr string, args ...interface{}) ([]string, 
 			return nil, nil, err
 		}
 		defer stmt.Close()
-		rows, err = stmt.Query(args)
+		rows, err = stmt.Query(args...)
 		if err != nil {
 			//log.Fatalf("Query failed: %s",err)
 			return nil, nil, err

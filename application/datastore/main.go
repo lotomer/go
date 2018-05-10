@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -13,8 +14,10 @@ import (
 
 	"../../datastore"
 	_ "../../datastore/service"
+	"../../http/response"
 	"../../http/router"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/julienschmidt/httprouter"
 )
 
 var nolog = flag.Bool("nolog", false, "Without log")
@@ -67,10 +70,41 @@ func main() {
 			db.Close()
 		}
 	}()
-	privilege.Use(db)
+	initData(db)
+	router.DefaultRouter.GET(uri4reload, reloadHandle)
+	log.Printf("Handle %s by %s", uri4reload, "reloadHandle")
+	http.ListenAndServe(":8080", router.DefaultRouter)
+}
+
+var uri4reload = "/reload"
+
+func initData(db *sql.DB) {
+	if db == nil {
+		db = datastore.DataSourcePool[datastore.ThisDataSourceID]
+	}
+	// 首先初始化数据商店，以便后续模块使用
 	datastore.Use(db)
+	// 初始化权限，依赖数据商店
+	privilege.Use(db)
 	log.Print(datastore.DataSources)
 	log.Print(datastore.DataSourcePool)
 	log.Print(datastore.DataConfigs)
-	http.ListenAndServe(":8080", router.DefaultRouter)
+}
+
+func reloadHandle(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+	key := req.URL.Query().Get("key")
+	// 1、校验key
+	user, err := privilege.GetUserByKey(key)
+	if err != nil {
+		response.FailJSON(w, err.Error())
+		return
+	}
+	// 2、校验key是否有该API权限
+	if err = privilege.CheckURIPrivilege(user, uri4reload); err != nil {
+		response.FailJSON(w, err.Error())
+		return
+	}
+	// 重新加载数据
+	initData(nil)
+	response.SuccessJSON(w, "ok")
 }
