@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"runtime/pprof"
 
 	"flag"
 
@@ -30,6 +31,7 @@ func main() {
 		flag.Usage()
 		os.Exit(0)
 	}
+
 	if *nolog {
 		var noneWriter common.NoneWriter
 		log.SetOutput(&noneWriter)
@@ -79,6 +81,16 @@ func main() {
 var uri4reload = "/reload"
 
 func initData(db *sql.DB) {
+	// 内存泄漏检查 begin
+	f, err := os.OpenFile("./cpu.prof", os.O_RDWR|os.O_CREATE, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+	pprof.StartCPUProfile(f)
+	defer pprof.StopCPUProfile()
+	// 内存泄漏检查 end
+
 	if db == nil {
 		db = datastore.DataSourcePool[datastore.ThisDataSourceID]
 	}
