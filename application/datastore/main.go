@@ -1,24 +1,20 @@
 package main
 
 import (
-	"database/sql"
+	"flag"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"runtime/pprof"
 
-	"flag"
-
+	//_ "net/http/pprof"
 	"../../common"
-	"../../privilege"
-
 	"../../datastore"
 	_ "../../datastore/service"
-	"../../http/response"
 	"../../http/router"
+	"../../privilege"
+	_ "../../privilege/service"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/julienschmidt/httprouter"
 )
 
 var nolog = flag.Bool("nolog", false, "Without log")
@@ -26,18 +22,21 @@ var help = flag.Bool("h", false, "Help info")
 var dbfile = flag.String("dbfile", "", "The database config file(json)")
 
 func main() {
+	// 解析命令行参数
 	flag.Parse()
 	if *help {
 		flag.Usage()
 		os.Exit(0)
 	}
 
+	// 根据命令行参数判断是否启用log
 	if *nolog {
 		var noneWriter common.NoneWriter
 		log.SetOutput(&noneWriter)
 	} else {
 		log.SetPrefix("[DataStore] ")
 	}
+	// 从配置文件读取数据库配置
 	var dbStr string
 	if *dbfile == "" {
 		for _, fname := range []string{"./db.json", "./etc/db.json", "/etc/db.json", "../etc/db.json", "../../etc/db.json"} {
@@ -61,6 +60,7 @@ func main() {
 	if dbStr == "" {
 		log.Fatal("Read database config failed!")
 	}
+	// 获取数据库连接
 	db, err := datastore.GenerateDBWithJSONStr(dbStr)
 	if err != nil {
 		log.Fatal(err)
@@ -72,51 +72,11 @@ func main() {
 			db.Close()
 		}
 	}()
-	initData(db)
-	router.DefaultRouter.GET(uri4reload, reloadHandle)
-	log.Printf("Handle %s by %s", uri4reload, "reloadHandle")
-	http.ListenAndServe(":8080", router.DefaultRouter)
-}
 
-var uri4reload = "/reload"
-
-func initData(db *sql.DB) {
-	// 内存泄漏检查 begin
-	f, err := os.OpenFile("./cpu.prof", os.O_RDWR|os.O_CREATE, 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer f.Close()
-	pprof.StartCPUProfile(f)
-	defer pprof.StopCPUProfile()
-	// 内存泄漏检查 end
-
-	if db == nil {
-		db = datastore.DataSourcePool[datastore.ThisDataSourceID]
-	}
 	// 首先初始化数据商店，以便后续模块使用
 	datastore.Use(db)
 	// 初始化权限，依赖数据商店
 	privilege.Use(db)
-	log.Print(datastore.DataSources)
-	log.Print(datastore.DataSourcePool)
-	log.Print(datastore.DataConfigs)
-}
 
-func reloadHandle(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
-	key := req.URL.Query().Get("key")
-	// 1、校验key
-	user, err := privilege.GetUserByKey(key)
-	if err != nil {
-		response.FailJSON(w, err.Error())
-		return
-	}
-	// 2、校验key是否有该API权限
-	if err = privilege.CheckURIPrivilege(user, uri4reload); err != nil {
-		response.FailJSON(w, err.Error())
-		return
-	}
-	// 重新加载数据
-	initData(nil)
-	response.SuccessJSON(w, "ok")
+	http.ListenAndServe(":8080", router.DefaultRouter)
 }

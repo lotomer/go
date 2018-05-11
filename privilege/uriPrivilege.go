@@ -3,7 +3,6 @@ package privilege
 
 import (
 	"fmt"
-	"log"
 )
 
 // CachedUserUrls 缓存的用户url
@@ -15,7 +14,7 @@ var CachedRoleUrls map[string]map[string]uint8
 // CheckURIPrivilege 校验用户是否有访问该uri的权限
 func CheckURIPrivilege(user *User, uri string) error {
 	// 1、校验用户访问该URI的权限
-	log.Print(CachedUserUrls)
+	//log.Print(CachedUserUrls)
 	if urls, ok := CachedUserUrls[user.ID]; ok {
 		if _, ok = urls[uri]; ok {
 			// 匹配上

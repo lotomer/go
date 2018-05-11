@@ -2,7 +2,6 @@ package datastore
 
 import (
 	"database/sql"
-	"encoding/json"
 )
 
 // DataConfigs 数据服务配置信息。key：数据服务编码
@@ -53,20 +52,4 @@ type QueryParameter struct {
 	// range|like|eq
 	Mode string                 `json:"mode"`
 	Ext  map[string]interface{} `json:"ext"`
-}
-
-// InitDataConfig 主动初始化
-func InitDataConfig() {
-	dataConfigPool := make(map[string]DataConfig)
-	for id, config := range DataConfigs {
-		dc := DataConfig{}
-		dc.DB = DataSourcePool[config.DsID]
-		json.Unmarshal([]byte(config.Options), &dc.Options)
-		json.Unmarshal([]byte(config.QueryParam), &dc.QueryParam)
-		json.Unmarshal([]byte(config.Returns), &dc.Returns)
-		dataConfigPool[id] = dc
-	}
-
-	// 最后再切换
-	DataConfigPool = dataConfigPool
 }

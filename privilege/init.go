@@ -10,27 +10,60 @@ import (
 
 // Use 使用数据库模式初始化
 func Use(db *sql.DB) {
-	// 初始化用户数据
-	initUsers(db)
+	// 初始化用户和角色信息
+	err := InitUserAndRole(db)
+	if err != nil {
+		panic(err)
+	}
+	// 初始化URI权限数据
+	err = InitURIPrivileges(db)
+	if err != nil {
+		panic(err)
+	}
 
-	// 初始化角色列表
-	initRoles(db)
+}
 
-	// 初始化用户角色
-	initUserRoles(db)
-
+// InitURIPrivileges 初始化URI权限数据
+func InitURIPrivileges(db *sql.DB) error {
 	// 初始化用户url权限
-	initUserURIPrivileges(db)
+	err := initUserURIPrivileges(db)
+	if err != nil {
+		return err
+	}
 
 	// 初始化角色url权限
-	initRoleURIPrivileges(db)
+	err = initRoleURIPrivileges(db)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// InitUserAndRole 初始化用户和角色信息
+func InitUserAndRole(db *sql.DB) error {
+	// 初始化用户数据
+	err := initUsers(db)
+	if err != nil {
+		return err
+	}
+	// 初始化角色列表
+	err = initRoles(db)
+	if err != nil {
+		return err
+	}
+	// 初始化用户角色
+	err = initUserRoles(db)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // 初始化角色url权限
-func initRoleURIPrivileges(db *sql.DB) {
+func initRoleURIPrivileges(db *sql.DB) error {
 	datas, err := datastore.GetAPIDatas("getValidRoleApiUris", nil)
 	if err != nil {
-		panic(err)
+		return (err)
 	}
 	//log.Print(datas)
 	roleUrls := make(map[string]map[string]uint8)
@@ -46,13 +79,14 @@ func initRoleURIPrivileges(db *sql.DB) {
 
 	// 替换原缓存
 	CachedRoleUrls = roleUrls
+	return nil
 }
 
 // 初始化用户url权限
-func initUserURIPrivileges(db *sql.DB) {
+func initUserURIPrivileges(db *sql.DB) error {
 	datas, err := datastore.GetAPIDatas("getValidUserApiUris", nil)
 	if err != nil {
-		panic(err)
+		return (err)
 	}
 	//log.Print(datas)
 	userUrls := make(map[int]map[string]uint8)
@@ -72,13 +106,14 @@ func initUserURIPrivileges(db *sql.DB) {
 
 	// 替换原缓存
 	CachedUserUrls = userUrls
+	return nil
 }
 
 // 初始化用户角色
-func initUserRoles(db *sql.DB) {
+func initUserRoles(db *sql.DB) error {
 	datas, err := datastore.GetAPIDatas("getValidUserRelRoles", nil)
 	if err != nil {
-		panic(err)
+		return (err)
 	}
 	//log.Print(datas)
 	for _, row := range datas {
@@ -88,13 +123,15 @@ func initUserRoles(db *sql.DB) {
 			}
 		}
 	}
+
+	return nil
 }
 
 // 初始化角色列表
-func initRoles(db *sql.DB) {
+func initRoles(db *sql.DB) error {
 	datas, err := datastore.GetAPIDatas("getValidRoles", nil)
 	if err != nil {
-		panic(err)
+		return (err)
 	}
 	//log.Print(datas)
 	roles := make(map[string]*Role)
@@ -108,13 +145,14 @@ func initRoles(db *sql.DB) {
 
 	// 替换原缓存
 	CachedRoles = roles
+	return nil
 }
 
 // 初始化用户列表
-func initUsers(db *sql.DB) {
+func initUsers(db *sql.DB) error {
 	datas, err := datastore.GetAPIDatas("getValidUsers", nil)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	//log.Print(datas)
 	users := make(map[string]*User)
@@ -133,4 +171,5 @@ func initUsers(db *sql.DB) {
 	//log.Print(users)
 	// 替换原缓存
 	CachedUsers = users
+	return nil
 }

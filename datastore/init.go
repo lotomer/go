@@ -49,22 +49,15 @@ func GenerateDBWithJSONStr(dbinfoStr string) (*sql.DB, error) {
 	}
 	return GenerateDB(dbInfo)
 }
-
-// Use 使用数据库方式
-func Use(db *sql.DB) {
-	var err error
-	DataSources, err = loadDataSourceFromDB(db)
+func InitDataSource(db *sql.DB) error {
+	DataSources, err := loadDataSourceFromDB(db)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	dataSourcePool := make(map[int]*sql.DB)
 	dataSourcePool[ThisDataSourceID] = db
-	var dsIDs bytes.Buffer
 	var dbTemp *sql.DB
-	dsIDs.WriteString(strconv.Itoa(ThisDataSourceID))
 	for id := range DataSources {
-		dsIDs.WriteByte(',')
-		dsIDs.WriteString(strconv.Itoa(id))
 		dbTemp, err = GenerateDBWithJSONStr(DataSources[id].Options)
 		if err != nil {
 			log.Fatalf("Create DB failed: %s", err)
@@ -75,12 +68,50 @@ func Use(db *sql.DB) {
 
 	// 最后再切换
 	DataSourcePool = dataSourcePool
+	return nil
+}
 
-	DataConfigs, err = loadDataConfigFromDB(db, dsIDs.String())
+// Use 使用数据库方式
+func Use(db *sql.DB) {
+	err := InitDataSource(db)
 	if err != nil {
 		panic(err)
 	}
-	InitDataConfig()
+
+	err = InitDataConfig(db)
+	if err != nil {
+		panic(err)
+	}
+}
+
+// InitDataConfig 主动初始化
+func InitDataConfig(db *sql.DB) error {
+	var dsIDs bytes.Buffer
+	dsIDs.WriteString(strconv.Itoa(ThisDataSourceID))
+	for id := range DataSources {
+		dsIDs.WriteByte(',')
+		dsIDs.WriteString(strconv.Itoa(id))
+
+	}
+
+	DataConfigs, err := loadDataConfigFromDB(db, dsIDs.String())
+	if err != nil {
+		return err
+	}
+
+	dataConfigPool := make(map[string]DataConfig)
+	for id, config := range DataConfigs {
+		dc := DataConfig{}
+		dc.DB = DataSourcePool[config.DsID]
+		json.Unmarshal([]byte(config.Options), &dc.Options)
+		json.Unmarshal([]byte(config.QueryParam), &dc.QueryParam)
+		json.Unmarshal([]byte(config.Returns), &dc.Returns)
+		dataConfigPool[id] = dc
+	}
+
+	// 最后再切换
+	DataConfigPool = dataConfigPool
+	return nil
 }
 
 // 从数据库加载数据源配置信息

@@ -1,12 +1,13 @@
 @echo off
 rem 作者：Lotomer
 rem 时间：2018-05-08
-rem 最后更新时间：2018-05-08
+rem 最后更新时间：2018-05-11
 set CURR_PATH=%~dp0
 set OUTPUT_PATH=output
 cd %CURR_PATH%
 call :buildGO datastore linux amd64 "" ".\application\datastore"
 call :buildGO datastore linux 386 "" ".\application\datastore"
+call :buildGO datastore linux arm64 "" ".\application\datastore"
 call :buildGO datastore windows amd64 ".exe" ".\application\datastore"
 
 goto :exit
