@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"../../common"
 )
 
 type failResp struct {
@@ -42,4 +44,14 @@ func SuccessJSON(w http.ResponseWriter, data interface{}) {
 		return
 	}
 	fmt.Fprint(w, string(b))
+}
+
+// BeforeProcessHandle 执行之前调用，用户处理公共情况
+func BeforeProcessHandle(w http.ResponseWriter, req *http.Request) bool {
+	// 如果指定了具体的域名，则允许跨域
+	if origin := common.GlobalConfig.AccessControlAllowOrigin; origin != "" && origin != "*" {
+		w.Header().Set("Access-Control-Allow-Origin", origin) // 支持跨域
+	}
+
+	return true
 }

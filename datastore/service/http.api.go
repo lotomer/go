@@ -27,6 +27,10 @@ func init() {
 
 // 重新加载
 func dataStoreReloadHandle(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+	// 执行预处理
+	if !response.BeforeProcessHandle(w, req) {
+		return
+	}
 	key := req.URL.Query().Get("key")
 	// 1、校验key
 	user, err := privilege.GetUserByKey(key)
