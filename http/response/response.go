@@ -52,6 +52,6 @@ func BeforeProcessHandle(w http.ResponseWriter, req *http.Request) bool {
 	if origin := common.GlobalConfig.AccessControlAllowOrigin; origin != "" && origin != "*" {
 		w.Header().Set("Access-Control-Allow-Origin", origin) // 支持跨域
 	}
-
+	w.Header().Set("Access-Control-Allow-Origin", "*") // 支持跨域 测试
 	return true
 }

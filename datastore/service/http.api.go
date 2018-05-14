@@ -27,10 +27,6 @@ func init() {
 
 // 重新加载
 func dataStoreReloadHandle(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
-	// 执行预处理
-	if !response.BeforeProcessHandle(w, req) {
-		return
-	}
 	key := req.URL.Query().Get("key")
 	// 1、校验key
 	user, err := privilege.GetUserByKey(key)
@@ -70,6 +66,10 @@ func dataStoreReloadHandle(w http.ResponseWriter, req *http.Request, ps httprout
 
 // http://localhost:8080/datastore/service/getUserByKey?KEY=111&key=ed14cf6d-d41d-48e4-806d-a9431baa9b46
 func dataStoreHandle(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+	// 执行预处理
+	if !response.BeforeProcessHandle(w, req) {
+		return
+	}
 	dataID := ps.ByName("dataId")
 	key := req.URL.Query().Get("key")
 	// 找到了该API，则继续
