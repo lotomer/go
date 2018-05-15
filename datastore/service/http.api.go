@@ -18,6 +18,7 @@ func init() {
 	// 注册API服务
 	dataStoreURIPattern := thisServiceURIRoot + ":dataId"
 	router.DefaultRouter.GET(dataStoreURIPattern, dataStoreHandle)
+	router.DefaultRouter.POST(dataStoreURIPattern, dataStoreHandle)
 	log.Printf("Handle %s", dataStoreURIPattern)
 
 	// 注册重新加载数据源、数据服务及权限数据功能
@@ -64,7 +65,7 @@ func dataStoreReloadHandle(w http.ResponseWriter, req *http.Request, ps httprout
 
 }
 
-// http://localhost:8080/datastore/service/getUserByKey?KEY=111&key=ed14cf6d-d41d-48e4-806d-a9431baa9b46
+// http://localhost:8080/datastore/service/getUserByKey?KEY=ed14cf6d-d41d-48e4-806d-a9431baa9b46&key=ed14cf6d-d41d-48e4-806d-a9431baa9b46
 func dataStoreHandle(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 	// 执行预处理
 	if !response.BeforeProcessHandle(w, req) {
@@ -85,9 +86,9 @@ func dataStoreHandle(w http.ResponseWriter, req *http.Request, ps httprouter.Par
 		response.FailJSON(w, err.Error())
 		return
 	}
-	inputParams := make(map[string]string)
+	inputParams := make(map[string][]string)
 	for k, v := range req.URL.Query() {
-		inputParams[k] = v[0]
+		inputParams[k] = v
 	}
 	resultDatas, err := datastore.GetAPIDatas(dataID, inputParams)
 	if err != nil {

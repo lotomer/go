@@ -9,7 +9,7 @@ import (
 )
 
 // GetAPIDatas 获取api对应的数据
-func GetAPIDatas(dataID string, inputParams map[string]string) ([]map[string]interface{}, error) {
+func GetAPIDatas(dataID string, inputParams map[string][]string) ([]map[string]interface{}, error) {
 	if config, ok := DataConfigPool[dataID]; ok {
 		sql, db := config.Options.SQL, config.DB
 		var sqlBuf bytes.Buffer
@@ -20,11 +20,27 @@ func GetAPIDatas(dataID string, inputParams map[string]string) ([]map[string]int
 			sqlBuf.WriteString(sql)
 			sqlBuf.WriteString(") a where 1=1")
 			for _, param := range config.QueryParam {
-				if paramValue, ok := inputParams[param.Name]; ok {
-					queryParam = append(queryParam, paramValue)
-					sqlBuf.WriteString(" AND `")
-					sqlBuf.WriteString(param.Name)
-					sqlBuf.WriteString("` = ?")
+				if paramValues, ok := inputParams[param.Name]; ok {
+					if len(paramValues) == 1 {
+						queryParam = append(queryParam, paramValues[0])
+						sqlBuf.WriteString(" AND `")
+						sqlBuf.WriteString(param.Name)
+						sqlBuf.WriteString("` = ?")
+					} else if len(paramValues) > 1 {
+						// 值是数组
+						sqlBuf.WriteString(" AND `")
+						sqlBuf.WriteString(param.Name)
+						sqlBuf.WriteString("` in (")
+						for i, v := range paramValues {
+							queryParam = append(queryParam, v)
+							if i != 0 {
+								sqlBuf.WriteString(",")
+							}
+							sqlBuf.WriteString("?")
+						}
+
+						sqlBuf.WriteString(")")
+					}
 				} else {
 					if param.Required == "true" {
 						return nil, fmt.Errorf("缺少必备参数： %s", param.Name)
