@@ -32,7 +32,6 @@ func main() {
 		flag.Usage()
 		os.Exit(0)
 	}
-
 	// 根据命令行参数判断是否启用log
 	if *nolog {
 		var noneWriter common.NoneWriter

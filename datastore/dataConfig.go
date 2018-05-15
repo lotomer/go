@@ -45,11 +45,10 @@ type Return struct {
 // QueryParameter 查询参数配置
 type QueryParameter struct {
 	nameText
-	DefaultValue string `json:"defaultValue"`
-	// text|number|date|list
-	Type     string `json:"type"`
-	Required string `json:"required"`
-	// range|like|eq
-	Mode string                 `json:"mode"`
-	Ext  map[string]interface{} `json:"ext"`
+	Code         string                 `json:"code"`
+	DefaultValue string                 `json:"defaultValue"`
+	Type         string                 `json:"type"` // text|number|date|list
+	Required     string                 `json:"required"`
+	Mode         string                 `json:"mode"` // range|like|eq
+	Ext          map[string]interface{} `json:"ext"`
 }
