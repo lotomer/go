@@ -1,9 +1,9 @@
 {
     "port":3306,
-    "host":"vps2.tomstools.org",
+    "host":"local.tomstools.org",
     "dbname":"of",
-    "username":"mysql",
-    "password":"mysql123",
+    "username":"of",
+    "password":"of2018",
     "maxPoolSize":10,
     "maxIdleSize":2,
     "type":"mysql",
