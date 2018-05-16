@@ -49,16 +49,18 @@ func GenerateDBWithJSONStr(dbinfoStr string) (*sql.DB, error) {
 	}
 	return GenerateDB(dbInfo)
 }
+
+// InitDataSource 初始化数据源配置
 func InitDataSource(db *sql.DB) error {
-	DataSources, err := loadDataSourceFromDB(db)
+	dataSources, err := loadDataSourceFromDB(db)
 	if err != nil {
 		return err
 	}
 	dataSourcePool := make(map[int]*sql.DB)
 	dataSourcePool[ThisDataSourceID] = db
 	var dbTemp *sql.DB
-	for id := range DataSources {
-		dbTemp, err = GenerateDBWithJSONStr(DataSources[id].Options)
+	for id, dataSource := range dataSources {
+		dbTemp, err = GenerateDBWithJSONStr(dataSource.Options)
 		if err != nil {
 			log.Fatalf("Create DB failed: %s", err)
 			continue
@@ -68,6 +70,7 @@ func InitDataSource(db *sql.DB) error {
 
 	// 最后再切换
 	DataSourcePool = dataSourcePool
+	DataSources = dataSources
 	return nil
 }
 
@@ -103,9 +106,21 @@ func InitDataConfig(db *sql.DB) error {
 	for id, config := range DataConfigs {
 		dc := DataConfig{}
 		dc.DB = DataSourcePool[config.DsID]
-		json.Unmarshal([]byte(config.Options), &dc.Options)
-		json.Unmarshal([]byte(config.QueryParam), &dc.QueryParam)
-		json.Unmarshal([]byte(config.Returns), &dc.Returns)
+		if err := json.Unmarshal([]byte(config.Options), &dc.Options); err != nil {
+			log.Printf("Parse json failed: %s, input: %s", err.Error(), config.Options)
+			continue
+		}
+		if config.QueryParam != "" { // 查询参数可能为空
+			if err := json.Unmarshal([]byte(config.QueryParam), &dc.QueryParam); err != nil {
+				log.Printf("Parse json failed: %s, input: %s", err.Error(), config.QueryParam)
+				continue
+			}
+		}
+		if err := json.Unmarshal([]byte(config.Returns), &dc.Returns); err != nil {
+			log.Printf("Parse json failed: %s, input: %s", err.Error(), config.Returns)
+			continue
+		}
+
 		dataConfigPool[id] = dc
 	}
 

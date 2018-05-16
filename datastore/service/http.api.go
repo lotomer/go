@@ -17,8 +17,8 @@ var uri4reload = "/datastore/reload"
 func init() {
 	// 注册API服务
 	dataStoreURIPattern := thisServiceURIRoot + ":dataId"
-	router.DefaultRouter.GET(dataStoreURIPattern, dataStoreHandle)
-	router.DefaultRouter.POST(dataStoreURIPattern, dataStoreHandle)
+	router.DefaultRouter.GET(dataStoreURIPattern, dataStoreGetHandle)
+	router.DefaultRouter.POST(dataStoreURIPattern, dataStorePostHandle)
 	log.Printf("Handle %s", dataStoreURIPattern)
 
 	// 注册重新加载数据源、数据服务及权限数据功能
@@ -66,7 +66,7 @@ func dataStoreReloadHandle(w http.ResponseWriter, req *http.Request, ps httprout
 }
 
 // http://localhost:8080/datastore/service/getUserByKey?KEY=ed14cf6d-d41d-48e4-806d-a9431baa9b46&key=ed14cf6d-d41d-48e4-806d-a9431baa9b46
-func dataStoreHandle(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+func dataStoreGetHandle(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 	// 执行预处理
 	if !response.BeforeProcessHandle(w, req) {
 		return
@@ -90,6 +90,47 @@ func dataStoreHandle(w http.ResponseWriter, req *http.Request, ps httprouter.Par
 	for k, v := range req.URL.Query() {
 		inputParams[k] = v
 	}
+	resultDatas, err := datastore.GetAPIDatas(dataID, inputParams)
+	if err != nil {
+		response.FailJSON(w, err.Error())
+		return
+	}
+	response.SuccessJSON(w, resultDatas)
+}
+
+func dataStorePostHandle(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+	// 执行预处理
+	if !response.BeforeProcessHandle(w, req) {
+		return
+	}
+	dataID := ps.ByName("dataId")
+	key := req.URL.Query().Get("key")
+	req.ParseForm()
+	inputParams := make(map[string][]string)
+	for k, v := range req.PostForm {
+		inputParams[k] = v
+	}
+	if key == "" {
+		// url参数中没有key，则从post参数中提取
+		if vs, ok := inputParams["key"]; ok && len(vs) > 0 {
+			key = vs[0]
+		}
+
+	}
+	// 找到了该API，则继续
+	log.Printf("start %s %s, key=%s", "datastore", dataID, key)
+	// 1、校验key
+	user, err := privilege.GetUserByKey(key)
+	if err != nil {
+		response.FailJSON(w, err.Error())
+		return
+	}
+	// 2、校验key是否有该API权限
+	if err = privilege.CheckURIPrivilege(user, thisServiceURIRoot+dataID); err != nil {
+		response.FailJSON(w, err.Error())
+		return
+	}
+
 	resultDatas, err := datastore.GetAPIDatas(dataID, inputParams)
 	if err != nil {
 		response.FailJSON(w, err.Error())

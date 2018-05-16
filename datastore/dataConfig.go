@@ -47,8 +47,8 @@ type QueryParameter struct {
 	nameText
 	Code         string                 `json:"code"`
 	DefaultValue string                 `json:"defaultValue"`
-	Type         string                 `json:"type"` // text|number|date|list
+	Type         string                 `json:"type"` // text|int|float|date|list
 	Required     string                 `json:"required"`
-	Mode         string                 `json:"mode"` // range|like|eq
+	Mode         string                 `json:"mode"` // range|like|eq|value  其中value表示直接用值替换，多用于分页
 	Ext          map[string]interface{} `json:"ext"`
 }
