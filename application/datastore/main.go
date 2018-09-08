@@ -97,7 +97,7 @@ func main() {
 		os.Exit(0)
 	}, nil, nil)
 
-	http.ListenAndServe(":8080", router.DefaultRouter)
+	http.ListenAndServe(fmt.Sprintf(":%d", *httpPort), router.DefaultRouter)
 }
 func notFoundHandle(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 	// 执行预处理

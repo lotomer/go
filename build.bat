@@ -5,10 +5,19 @@ rem 最后更新时间：2018-05-11
 set CURR_PATH=%~dp0
 set OUTPUT_PATH=output
 cd %CURR_PATH%
-call :buildGO datastore linux amd64 "" ".\application\datastore"
-call :buildGO datastore linux 386 "" ".\application\datastore"
-call :buildGO datastore linux arm64 "" ".\application\datastore"
-call :buildGO datastore windows amd64 ".exe" ".\application\datastore"
+
+set app_name=datastore
+call :buildGO %app_name% linux amd64 "" ".\application\%app_name%"
+call :buildGO %app_name% linux 386 "" ".\application\%app_name%"
+call :buildGO %app_name% linux arm64 "" ".\application\%app_name%"
+call :buildGO %app_name% windows amd64 ".exe" ".\application\%app_name%"
+
+set app_name=crawler
+call :buildGO %app_name% linux amd64 "" ".\application\%app_name%"
+call :buildGO %app_name% linux 386 "" ".\application\%app_name%"
+call :buildGO %app_name% linux arm64 "" ".\application\%app_name%"
+call :buildGO %app_name% windows amd64 ".exe" ".\application\%app_name%"
+
 
 goto :exit
 
