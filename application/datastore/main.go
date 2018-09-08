@@ -20,6 +20,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+var httpPort = flag.Int("port", 8080, "Http port")
 var nolog = flag.Bool("nolog", false, "Without log")
 var help = flag.Bool("h", false, "Help info")
 var dbfile = flag.String("dbfile", "", "The database config file(json)")
