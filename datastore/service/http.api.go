@@ -4,11 +4,11 @@ import (
 	"log"
 	"net/http"
 
-	"../../datastore"
-	"../../http/response"
-	"../../http/router"
-	"../../privilege"
 	"github.com/julienschmidt/httprouter"
+	"github.com/lotomer/go/datastore"
+	"github.com/lotomer/go/http/response"
+	"github.com/lotomer/go/http/router"
+	"github.com/lotomer/go/privilege"
 )
 
 var thisServiceURIRoot = "/datastore/service/"

@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"../../http/router"
 	"github.com/julienschmidt/httprouter"
+	"github.com/lotomer/go/http/router"
 )
 
 var thisServiceURIRoot = "/crawl/task/"

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"../../common"
+	"github.com/lotomer/go/common"
 )
 
 type failResp struct {

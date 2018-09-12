@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	"../common"
+	"github.com/lotomer/go/common"
 )
 
 // 用于提取变量

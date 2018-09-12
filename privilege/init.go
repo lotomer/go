@@ -5,7 +5,7 @@ import (
 	"log"
 	"strconv"
 
-	"../datastore"
+	"github.com/lotomer/go/datastore"
 )
 
 // Use 使用数据库模式初始化
