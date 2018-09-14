@@ -8,6 +8,13 @@ import (
 	"github.com/lotomer/go/common"
 )
 
+// ResultDatas 查询结果数据，包含页码及总数信息
+type ResultDatas struct {
+	Total    uint          `json:"total"`
+	PageNum  uint          `json:"pageNum"`
+	PageSize uint          `json:"pageSize"`
+	Datas    []interface{} `json:"datas"`
+}
 type failResp struct {
 	Status  uint8  `json:"status"`
 	Message string `json:"message"`
