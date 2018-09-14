@@ -45,13 +45,13 @@ func HTTPDo(method string, url string, body string, headers map[string]string) (
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", nil, nil
+		return "", nil, err
 	}
 	defer resp.Body.Close()
 	// 读取内容
 	content, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return "", nil, nil
+		return "", nil, err
 	}
 
 	return string(content), resp.Header, nil
