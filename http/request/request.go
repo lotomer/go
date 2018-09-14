@@ -13,12 +13,12 @@ const ContentType4json = "application/json"
 const ContentType4post = "application/x-www-form-urlencoded"
 
 // Get http get页面
-func Get(url string) (string, error) {
+func Get(url string) (string, http.Header, error) {
 	return HTTPDo("GET", url, "", nil)
 }
 
 //HTTPDo 根据指定参数执行http请求并返回结果
-func HTTPDo(method string, url string, body string, headers map[string]string) (string, error) {
+func HTTPDo(method string, url string, body string, headers map[string]string) (string, http.Header, error) {
 	var bodyReader *strings.Reader
 	if body != "" {
 		bodyReader = strings.NewReader(body)
@@ -27,7 +27,7 @@ func HTTPDo(method string, url string, body string, headers map[string]string) (
 	}
 	req, err := http.NewRequest(method, url, bodyReader)
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 	// 设置header
 	if headers != nil {
@@ -39,13 +39,14 @@ func HTTPDo(method string, url string, body string, headers map[string]string) (
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", nil
+		return "", nil, nil
 	}
 	defer resp.Body.Close()
 	// 读取内容
 	content, err := ioutil.ReadAll(strings.NewReader(body))
 	if err != nil {
-		return "", nil
+		return "", nil, nil
 	}
-	return string(content), nil
+
+	return string(content), resp.Header, nil
 }
