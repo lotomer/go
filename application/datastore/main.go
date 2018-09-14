@@ -10,5 +10,5 @@ import (
 )
 
 func main() {
-	common.Main()
+	common.Main("datastore")
 }

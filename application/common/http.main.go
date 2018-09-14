@@ -25,7 +25,7 @@ var dbfile = flag.String("dbfile", "", "The database config file(json)")
 var accessControlAllowOrigin = flag.String("Access-Control-Allow-Origin", "", "The http header Access-Control-Allow-Origin")
 
 // Main 提供给通用http服务入口
-func Main() {
+func Main(name string) {
 	// 解析命令行参数
 	flag.Parse()
 	if *help {
@@ -37,7 +37,7 @@ func Main() {
 		var noneWriter common.NoneWriter
 		log.SetOutput(&noneWriter)
 	} else {
-		log.SetPrefix("[DataStore] ")
+		log.SetPrefix("[" + name + "] ")
 	}
 	// 设置全局变量
 	common.GlobalConfig.AccessControlAllowOrigin = *accessControlAllowOrigin
