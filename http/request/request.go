@@ -17,6 +17,18 @@ func Get(url string) (string, http.Header, error) {
 	return HTTPDo("GET", url, "", nil)
 }
 
+// Post http post请求
+func Post(url string, body string) (string, http.Header, error) {
+	headers := map[string]string{"Content-Type": "application/json"}
+	return HTTPDo("POST", url, body, headers)
+}
+
+// PostForm http post请求
+func PostForm(url string, body string) (string, http.Header, error) {
+	headers := map[string]string{"Content-Type": "application/x-www-form-urlencoded"}
+	return HTTPDo("POST", url, body, headers)
+}
+
 //HTTPDo 根据指定参数执行http请求并返回结果
 func HTTPDo(method string, url string, body string, headers map[string]string) (string, http.Header, error) {
 	req, err := http.NewRequest(method, url, strings.NewReader(body))
@@ -37,7 +49,7 @@ func HTTPDo(method string, url string, body string, headers map[string]string) (
 	}
 	defer resp.Body.Close()
 	// 读取内容
-	content, err := ioutil.ReadAll(strings.NewReader(body))
+	content, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", nil, nil
 	}
