@@ -95,7 +95,7 @@ func Main() {
 		fmt.Println("结束退出...")
 		os.Exit(0)
 	}, nil, nil)
-
+	log.Printf("listening at: 0.0.0.0:%d", *httpPort)
 	http.ListenAndServe(fmt.Sprintf(":%d", *httpPort), router.DefaultRouter)
 }
 func notFoundHandle(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
