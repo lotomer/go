@@ -19,13 +19,7 @@ func Get(url string) (string, http.Header, error) {
 
 //HTTPDo 根据指定参数执行http请求并返回结果
 func HTTPDo(method string, url string, body string, headers map[string]string) (string, http.Header, error) {
-	var bodyReader *strings.Reader
-	if body != "" {
-		bodyReader = strings.NewReader(body)
-	} else {
-		bodyReader = nil
-	}
-	req, err := http.NewRequest(method, url, bodyReader)
+	req, err := http.NewRequest(method, url, strings.NewReader(body))
 	if err != nil {
 		return "", nil, err
 	}
