@@ -1,6 +1,7 @@
 package common
 
 import (
+	"database/sql"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -9,13 +10,12 @@ import (
 	"os"
 
 	"github.com/lotomer/go/common"
-	"github.com/lotomer/go/datastore"
 	"github.com/lotomer/go/http/response"
 	"github.com/lotomer/go/http/router"
-	"github.com/lotomer/go/privilege"
 	//_ "../../privilege/service"
 	//_ "github.com/go-sql-driver/mysql"
 	"github.com/julienschmidt/httprouter"
+	mydb "github.com/lotomer/go/db"
 )
 
 var httpPort = flag.Int("port", 8080, "Http port")
@@ -24,8 +24,8 @@ var help = flag.Bool("h", false, "Help info")
 var dbfile = flag.String("dbfile", "", "The database config file(json)")
 var accessControlAllowOrigin = flag.String("Access-Control-Allow-Origin", "", "The http header Access-Control-Allow-Origin")
 
-// Main 提供给通用http服务入口
-func Main(name string) {
+//Main 提供给通用http服务入口
+func Main(name string, fun func(*sql.DB)) {
 	// 解析命令行参数
 	flag.Parse()
 	if *help {
@@ -66,7 +66,7 @@ func Main(name string) {
 		log.Fatal("Read database config failed!")
 	}
 	// 获取数据库连接
-	db, err := datastore.GenerateDBWithJSONStr(dbStr)
+	db, err := mydb.GenerateDBWithJSONStr(dbStr)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -78,20 +78,23 @@ func Main(name string) {
 	// 	}
 	// }()
 
+	mydb.Use(db) // 保存主库
+
+	fun(db)
 	// 首先初始化数据商店，以便后续模块使用
-	datastore.Use(db)
+	//datastore.Use(db)
 	// 初始化权限，依赖数据商店
-	privilege.Use(db)
+	//privilege.Use(db)
 
 	router.DefaultRouter.GET("/", notFoundHandle)
 
 	common.ProgramSignalHandle(func() {
 		fmt.Println("开始退出...")
 		fmt.Println("执行清理...")
-		for id, db := range datastore.DataSourcePool {
-			fmt.Printf("close db %d\n", id)
-			db.Close()
-		}
+		// for id, db := range mydb.DataSourcePool {
+		// 	fmt.Printf("close db %d\n", id)
+		// 	db.Close()
+		// }
 		fmt.Println("结束退出...")
 		os.Exit(0)
 	}, nil, nil)

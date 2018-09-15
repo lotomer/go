@@ -4,51 +4,11 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/json"
-	"errors"
 	"log"
 	"strconv"
-	"strings"
+
+	mydb "github.com/lotomer/go/db"
 )
-
-// DBInfo 数据库配置信息
-type DBInfo struct {
-	Port        uint16 `json:"port"`
-	Host        string `json:"host"`
-	DBname      string `json:"dbname"`
-	Username    string `json:"username"`
-	Password    string `json:"password"`
-	Type        string `json:"type"`
-	Maxpoolsize uint16 `json:"maxPoolSize" `
-	Maxidlesize uint16 `json:"maxIdleSize" `
-	Urltemplate string `json:"urlTemplate" `
-}
-
-func generatURL(dbinfo *DBInfo) string {
-	url := dbinfo.Urltemplate
-	url = strings.Replace(url, "${port}", strconv.Itoa(int(dbinfo.Port)), -1)
-	url = strings.Replace(url, "${host}", dbinfo.Host, -1)
-	url = strings.Replace(url, "${dbname}", dbinfo.DBname, -1)
-	url = strings.Replace(url, "${username}", dbinfo.Username, -1)
-	url = strings.Replace(url, "${password}", dbinfo.Password, -1)
-	return url
-}
-
-// GenerateDB 根据数据库配置信息获取数据库操作指针
-func GenerateDB(dbInfo *DBInfo) (*sql.DB, error) {
-	url := generatURL(dbInfo)
-	log.Printf("db url: %s", url)
-	return sql.Open(dbInfo.Type, url)
-}
-
-// GenerateDBWithJSONStr 根据数据库配置信息(json字符串)获取数据库操作指针
-func GenerateDBWithJSONStr(dbinfoStr string) (*sql.DB, error) {
-	dbInfo := &DBInfo{}
-	err := json.Unmarshal([]byte(dbinfoStr), dbInfo)
-	if err != nil {
-		return nil, errors.New(err.Error() + ": " + dbinfoStr)
-	}
-	return GenerateDB(dbInfo)
-}
 
 // InitDataSource 初始化数据源配置
 func InitDataSource(db *sql.DB) error {
@@ -56,20 +16,17 @@ func InitDataSource(db *sql.DB) error {
 	if err != nil {
 		return err
 	}
-	dataSourcePool := make(map[int]*sql.DB)
-	dataSourcePool[ThisDataSourceID] = db
 	var dbTemp *sql.DB
 	for id, dataSource := range dataSources {
-		dbTemp, err = GenerateDBWithJSONStr(dataSource.Options)
+		dbTemp, err = mydb.GenerateDBWithJSONStr(dataSource.Options)
 		if err != nil {
 			log.Fatalf("Create DB failed: %s", err)
 			continue
 		}
-		dataSourcePool[id] = dbTemp
+		mydb.AddDB(id, dbTemp)
 	}
 
 	// 最后再切换
-	DataSourcePool = dataSourcePool
 	DataSources = dataSources
 	return nil
 }
@@ -90,7 +47,7 @@ func Use(db *sql.DB) {
 // InitDataConfig 主动初始化
 func InitDataConfig(db *sql.DB) error {
 	var dsIDs bytes.Buffer
-	dsIDs.WriteString(strconv.Itoa(ThisDataSourceID))
+	dsIDs.WriteString(strconv.Itoa(mydb.ThisDataSourceID))
 	for id := range DataSources {
 		dsIDs.WriteByte(',')
 		dsIDs.WriteString(strconv.Itoa(id))

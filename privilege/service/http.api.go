@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/lotomer/go/datastore"
+	mydb "github.com/lotomer/go/db"
 	"github.com/lotomer/go/http/response"
 	"github.com/lotomer/go/http/router"
 	"github.com/lotomer/go/privilege"
@@ -37,7 +37,7 @@ func reloadHandle(w http.ResponseWriter, req *http.Request, ps httprouter.Params
 	// 重新加载数据
 	switch module := req.URL.Query().Get("module"); module {
 	case "user":
-		err = privilege.InitUserAndRole(datastore.DataSourcePool[datastore.ThisDataSourceID])
+		err = privilege.InitUserAndRole(mydb.GetDB(mydb.ThisDataSourceID))
 		if err != nil {
 			response.FailJSON(w, err.Error())
 		} else {
@@ -45,7 +45,7 @@ func reloadHandle(w http.ResponseWriter, req *http.Request, ps httprouter.Params
 		}
 
 	case "uri":
-		err = privilege.InitURIPrivileges(datastore.DataSourcePool[datastore.ThisDataSourceID])
+		err = privilege.InitURIPrivileges(mydb.GetDB(mydb.ThisDataSourceID))
 		if err != nil {
 			response.FailJSON(w, err.Error())
 		} else {
