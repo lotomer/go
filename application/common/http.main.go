@@ -80,7 +80,10 @@ func Main(name string, fun func(*sql.DB)) {
 
 	mydb.Use(db) // 保存主库
 
-	fun(db)
+	if fun != nil {
+		fun(db)
+	}
+
 	// 首先初始化数据商店，以便后续模块使用
 	//datastore.Use(db)
 	// 初始化权限，依赖数据商店
