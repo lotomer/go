@@ -1,6 +1,6 @@
 {
     "port":3306,
-    "host":"app.tomstools.org",
+    "host":"local.tomstools.org",
     "dbname":"of",
     "username":"of",
     "password":"of2018",

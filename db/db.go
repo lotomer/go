@@ -7,6 +7,8 @@ import (
 	"log"
 	"strconv"
 	"strings"
+
+	"github.com/lotomer/go/config"
 )
 
 // dataSourcePool 数据源连接池
@@ -63,20 +65,37 @@ func generatURL(dbinfo *dbInfo) string {
 }
 
 // GenerateDB 根据数据库配置信息获取数据库操作指针
-func GenerateDB(dbInfo *dbInfo) (*sql.DB, error) {
-	url := generatURL(dbInfo)
+func GenerateDB() (*sql.DB, error) {
+	// dbInfo := dbInfo{}
+	// dbInfo.Urltemplate = config.Config.Get("urlTemplate").(string)
+	// dbInfo.Port = uint16(config.Config.Get("port"))
+	// dbInfo.Host = config.Config.Get("host").(string)
+	// dbInfo.DBname = config.Config.Get("dbname").(string)
+	// dbInfo.Username = config.Config.Get("username").(string)
+	// dbInfo.Password = config.Config.Get("password").(string)
+	// return generateDB(&dbInfo)
+	data, err := json.Marshal(config.Config.GetAll())
+	if err != nil {
+		return nil, err
+	}
+
+	return GenerateDBWithJSONStr(data)
+}
+func generateDB(dbinfo *dbInfo) (*sql.DB, error) {
+	url := generatURL(dbinfo)
 	log.Printf("db url: %s", url)
-	return sql.Open(dbInfo.Type, url)
+	return sql.Open(dbinfo.Type, url)
 }
 
 // GenerateDBWithJSONStr 根据数据库配置信息(json字符串)获取数据库操作指针
-func GenerateDBWithJSONStr(dbinfoStr string) (*sql.DB, error) {
+func GenerateDBWithJSONStr(dbinfoStr []byte) (*sql.DB, error) {
 	dbInfo := &dbInfo{}
-	err := json.Unmarshal([]byte(dbinfoStr), dbInfo)
+	err := json.Unmarshal(dbinfoStr, dbInfo)
 	if err != nil {
-		return nil, errors.New(err.Error() + ": " + dbinfoStr)
+		return nil, errors.New(err.Error() + ": " + string(dbinfoStr))
 	}
-	return GenerateDB(dbInfo)
+
+	return generateDB(dbInfo)
 }
 
 // LoadDatasFromDB 根据sql获取所有数据

@@ -1,6 +1,8 @@
 package request
 
 import (
+	"encoding/json"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -15,6 +17,21 @@ const ContentType4post = "application/x-www-form-urlencoded"
 // Get http get页面
 func Get(url string) (string, http.Header, error) {
 	return HTTPDo("GET", url, "", nil)
+}
+
+// ParseReaderContent2map 将reader中的内容（json格式）解析成map
+func ParseReaderContent2map(reader io.Reader) (*map[string]interface{}, error) {
+	body, err := ioutil.ReadAll(reader)
+	if err != nil {
+		return nil, err
+	}
+	param := make(map[string]interface{})
+	if err = json.Unmarshal(body, &param); err != nil {
+		return nil, err
+	}
+
+	return &param, nil
+
 }
 
 // Post http post请求

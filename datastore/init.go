@@ -18,7 +18,7 @@ func InitDataSource(db *sql.DB) error {
 	}
 	var dbTemp *sql.DB
 	for id, dataSource := range dataSources {
-		dbTemp, err = mydb.GenerateDBWithJSONStr(dataSource.Options)
+		dbTemp, err = mydb.GenerateDBWithJSONStr([]byte(dataSource.Options))
 		if err != nil {
 			log.Fatalf("Create DB failed: %s", err)
 			continue

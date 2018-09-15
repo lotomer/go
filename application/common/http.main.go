@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/lotomer/go/common"
+	"github.com/lotomer/go/config"
 	"github.com/lotomer/go/http/response"
 	"github.com/lotomer/go/http/router"
 	//_ "../../privilege/service"
@@ -21,7 +22,7 @@ import (
 var httpPort = flag.Int("port", 8080, "Http port")
 var nolog = flag.Bool("nolog", false, "Without log")
 var help = flag.Bool("h", false, "Help info")
-var dbfile = flag.String("dbfile", "", "The database config file(json)")
+var configFile = flag.String("config", "", "The database config file(json)")
 var accessControlAllowOrigin = flag.String("Access-Control-Allow-Origin", "", "The http header Access-Control-Allow-Origin")
 
 //Main 提供给通用http服务入口
@@ -41,32 +42,39 @@ func Main(name string, fun func(*sql.DB)) {
 	}
 	// 设置全局变量
 	common.GlobalConfig.AccessControlAllowOrigin = *accessControlAllowOrigin
+	fileName := name + ".json"
 	// 从配置文件读取数据库配置
-	var dbStr string
-	if *dbfile == "" {
-		for _, fname := range []string{"./db.json", "./etc/db.json", "/etc/db.json", "../etc/db.json", "../../etc/db.json"} {
+	var configStr []byte
+	if *configFile == "" {
+		for _, fname := range []string{"./" + fileName, "./etc/" + fileName, "/etc/" + fileName, "../etc/" + fileName, "../../etc/" + fileName,
+			"./config.json", "./etc/config.json", "/etc/config.json", "../etc/config.json", "../../etc/config.json"} {
 			buff, err := ioutil.ReadFile(fname)
 			if err != nil {
 				log.Print(err)
 			} else {
-				log.Printf("Read database config success from %s", fname)
-				dbStr = string(buff)
+				log.Printf("Read config success from %s", fname)
+				configStr = buff
 				break
 			}
 		}
 	} else {
-		buff, err := ioutil.ReadFile(*dbfile)
+		buff, err := ioutil.ReadFile(*configFile)
 		if err != nil {
 			panic(err)
 		}
-		log.Printf("Read database config success from %s", *dbfile)
-		dbStr = string(buff)
+		log.Printf("Read config success from %s", *configFile)
+		configStr = buff
 	}
-	if dbStr == "" {
-		log.Fatal("Read database config failed!")
+	if len(configStr) == 0 {
+		log.Fatal("Read config failed!")
+	}
+
+	err := config.Config.Use(configStr)
+	if err != nil {
+		log.Fatal(err)
 	}
 	// 获取数据库连接
-	db, err := mydb.GenerateDBWithJSONStr(dbStr)
+	db, err := mydb.GenerateDB()
 	if err != nil {
 		log.Fatal(err)
 	}
