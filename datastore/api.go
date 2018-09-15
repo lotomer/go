@@ -2,6 +2,7 @@ package datastore
 
 import (
 	"bytes"
+	"database/sql"
 	"fmt"
 	"log"
 	"regexp"
@@ -13,12 +14,21 @@ import (
 // 用于提取变量
 var regexp4param = regexp.MustCompile(`\$\{([^}]+)\}`)
 
+// GetDB 获取默认数据库对象
+func GetDB(dsID int) *sql.DB {
+	if dsID < 0 {
+		return DataSourcePool[ThisDataSourceID]
+	} else {
+		return DataSourcePool[dsID]
+	}
+}
+
 // GetAPIDatas 获取api对应的数据。
 // 1、参数Mode如果是list，则对应的入参名要追加[]进行取值。比如参数a是list，那么输入参数对应的参数名是a[]
 // 2、参数Mode如果是range，则对应的入参值格式为：起始值,终止值
 func GetAPIDatas(dataID string, inputParams map[string][]string) ([]map[string]interface{}, error) {
 	if config, ok := DataConfigPool[dataID]; ok {
-		sql, db := config.Options.SQL, config.DB
+		sql, db := config.Options.SQL, DataSourcePool[config.dsID]
 		sql, queryParam, err := generateSQL(sql, inputParams, config.QueryParam)
 		if err != nil {
 			return nil, err

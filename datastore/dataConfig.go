@@ -1,9 +1,5 @@
 package datastore
 
-import (
-	"database/sql"
-)
-
 // DataConfigs 数据服务配置信息。key：数据服务编码
 var DataConfigs map[string]dataConfig
 
@@ -16,7 +12,7 @@ type sqlConfig struct {
 
 // DataConfig 解析后的数据库服务配置
 type DataConfig struct {
-	DB         *sql.DB
+	dsID       int
 	QueryParam []QueryParameter
 	Returns    []Return
 	Options    sqlConfig

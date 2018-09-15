@@ -105,7 +105,7 @@ func InitDataConfig(db *sql.DB) error {
 	dataConfigPool := make(map[string]DataConfig)
 	for id, config := range DataConfigs {
 		dc := DataConfig{}
-		dc.DB = DataSourcePool[config.DsID]
+		dc.dsID = config.DsID
 		if err := json.Unmarshal([]byte(config.Options), &dc.Options); err != nil {
 			log.Printf("Parse json failed: %s, input: %s", err.Error(), config.Options)
 			continue
