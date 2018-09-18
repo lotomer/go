@@ -62,3 +62,26 @@ func BeforeProcessHandle(w http.ResponseWriter, req *http.Request) bool {
 	w.Header().Set("Access-Control-Allow-Origin", "*") // 支持跨域 测试
 	return true
 }
+
+// ProcessResultWithPageInfo 处理带分页信息的结果数据
+func ProcessResultWithPageInfo(w http.ResponseWriter, datas *ResultDatas, err error, pageNum, pageSize int) {
+	if err != nil {
+		FailJSON(w, err.Error())
+		return
+	}
+	// 回填分页信息
+	(*datas).PageNum = pageNum
+	(*datas).PageSize = pageSize
+
+	SuccessJSON(w, datas)
+}
+
+// ProcessResult 处理结果数据（不带分页）
+func ProcessResult(w http.ResponseWriter, datas *ResultDatas, err error) {
+	if err != nil {
+		FailJSON(w, err.Error())
+		return
+	}
+
+	SuccessJSON(w, datas)
+}
