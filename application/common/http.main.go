@@ -24,13 +24,14 @@ import (
 
 var httpPort = flag.Int("port", 8080, "Http port")
 var nolog = flag.Bool("nolog", false, "Without log")
-var pringVersion = flag.Bool("v", false, "Help info")
+var pringVersion = flag.Bool("v", false, "Version info")
+var demon = flag.Bool("d", false, "Help info")
 var help = flag.Bool("h", false, "Help info")
 var configFile = flag.String("config", "", "The database config file(json)")
 var accessControlAllowOrigin = flag.String("Access-Control-Allow-Origin", "", "The http header Access-Control-Allow-Origin")
 
 //Main 提供给通用http服务入口
-func Main(name string, version string, debug bool, fun func(*sql.DB)) {
+func Main(name string, version string, fun func(*sql.DB)) {
 	// 解析命令行参数
 	flag.Parse()
 	if *help {
@@ -38,12 +39,14 @@ func Main(name string, version string, debug bool, fun func(*sql.DB)) {
 		os.Exit(0)
 	}
 	if *pringVersion {
-		fmt.Printf("Version: %s, debug mode: %t", version, debug)
+		fmt.Printf("Version: %s", version)
+		return
 	}
 	pid := os.Getpid()
-	if !debug {
+	filePath, _ := filepath.Abs(os.Args[0]) //将命令行参数中执行文件路径转换成可用路径
+	//currentDir:= filepath.Dir(filePath)
+	if *demon {
 		if os.Getppid() != 1 { //判断当其是否是子进程，当父进程return之后，子进程会被 系统1 号进程接管
-			filePath, _ := filepath.Abs(os.Args[0]) //将命令行参数中执行文件路径转换成可用路径
 			cmd := exec.Command(filePath, os.Args[1:]...)
 			//将其他命令传入生成出的进程
 			cmd.Stdin = os.Stdin //给新进程设置文件描述符，可以重定向到文件中
