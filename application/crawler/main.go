@@ -12,8 +12,13 @@ import (
 	_ "github.com/lotomer/go/privilege/service"
 )
 
+const (
+	// VERSION 版本号
+	VERSION = "unknown"
+)
+
 func main() {
-	common.Main("crawler", func(db *sql.DB) {
+	common.Main("crawler", VERSION, func(db *sql.DB) {
 		datastore.Use(db)
 		privilege.Use(db)
 	})

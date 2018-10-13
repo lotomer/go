@@ -8,6 +8,24 @@ import (
 	"strings"
 )
 
+// Page 分页信息
+type Page struct {
+	PageNum  int `json:"pageNum"`
+	PageSize int `json:"pageSize"`
+}
+
+// Meta 元数据信息
+type Meta struct {
+	Token string `json:"token"` // 令牌
+	//UserName string `json:"userName"` // 用户名
+}
+
+// Param 请求参数
+type Param struct {
+	Meta
+	Params json.RawMessage `json:"params"`
+}
+
 // ContentType4json 用于JSON请求的HTTP请求头
 const ContentType4json = "application/json"
 
