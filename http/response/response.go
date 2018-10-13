@@ -19,9 +19,9 @@ type Result struct {
 
 // ResultDatas 查询结果数据，包含页码及总数信息
 type ResultDatas struct {
-	request.Page `json:"page"`
-	Total        int64       `json:"total"`
-	Datas        interface{} `json:"datas"`
+	request.Page
+	Total int64       `json:"total"`
+	Datas interface{} `json:"datas"`
 }
 
 // type failResp struct {
@@ -72,8 +72,10 @@ func ProcessResultWithPageInfo(w io.Writer, datas *ResultDatas, err error, pageN
 		return
 	}
 	// 回填分页信息
-	(*datas).PageNum = pageNum
-	(*datas).PageSize = pageSize
+	datas.PageNum = pageNum
+	datas.PageSize = pageSize
+	// (*datas).PageNum = pageNum
+	// (*datas).PageSize = pageSize
 
 	SuccessJSON(w, datas)
 }

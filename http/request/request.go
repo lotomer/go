@@ -20,9 +20,10 @@ type Meta struct {
 	//UserName string `json:"userName"` // 用户名
 }
 
-// Param 请求参数
-type Param struct {
+// RequestParameter 请求参数
+type RequestParameter struct {
 	Meta
+	Page
 	Params json.RawMessage `json:"params"`
 }
 
