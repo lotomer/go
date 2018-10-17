@@ -31,14 +31,14 @@ func (c *config) GetAll() map[string]interface{} {
 	return c.configs
 }
 
-// // GetString 根据名字获取配置值
-// func (c *config) GetString(name string) string {
-// 	if data, ok := c.configs[name].(string); !ok {
-// 		return data
-// 	} else {
-// 		return ""
-// 	}
-// }
+// GetString 根据名字获取配置值
+func (c *config) GetString(name string) string {
+	if data, ok := c.configs[name].(string); ok {
+		return data
+	} else {
+		return ""
+	}
+}
 
 // // GetInt 根据名字获取配置值
 // func (c *config) GetInt(name string) (int, error) {
