@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -32,13 +33,23 @@ func AddDB(dsID int, db *sql.DB) {
 	dataSourcePool[dsID] = db
 }
 
-// GetDB 获取默认数据库对象
-func GetDB(dsID int) *sql.DB {
+// GetDefaultDB 获取默认数据库对象
+func GetDefaultDB() (*sql.DB, error) {
+	return GetDB(ThisDataSourceID)
+}
+
+// GetDB 获取数据库对象
+func GetDB(dsID int) (*sql.DB, error) {
+	var db *sql.DB
 	if dsID < 0 {
-		return dataSourcePool[ThisDataSourceID]
+		db = dataSourcePool[ThisDataSourceID]
 	} else {
-		return dataSourcePool[dsID]
+		db = dataSourcePool[dsID]
 	}
+	if db == nil {
+		return nil, fmt.Errorf("Get DB failed for dsID: %d", dsID)
+	}
+	return db, nil
 }
 
 // dbInfo 数据库配置信息
@@ -49,13 +60,13 @@ type dbInfo struct {
 	Username    string `json:"username"`
 	Password    string `json:"password"`
 	Type        string `json:"type"`
-	Maxpoolsize uint16 `json:"maxPoolSize" `
-	Maxidlesize uint16 `json:"maxIdleSize" `
-	Urltemplate string `json:"urlTemplate" `
+	MaxPoolSize int    `json:"maxPoolSize" `
+	MaxIdleSize int    `json:"maxIdleSize" `
+	URLTemplate string `json:"urlTemplate" `
 }
 
 func generatURL(dbinfo *dbInfo) string {
-	url := dbinfo.Urltemplate
+	url := dbinfo.URLTemplate
 	url = strings.Replace(url, "${port}", strconv.Itoa(int(dbinfo.Port)), -1)
 	url = strings.Replace(url, "${host}", dbinfo.Host, -1)
 	url = strings.Replace(url, "${dbname}", dbinfo.DBname, -1)
@@ -84,7 +95,21 @@ func GenerateDB() (*sql.DB, error) {
 func generateDB(dbinfo *dbInfo) (*sql.DB, error) {
 	url := generatURL(dbinfo)
 	log.Printf("db url: %s", url)
-	return sql.Open(dbinfo.Type, url)
+	db, err := sql.Open(dbinfo.Type, url)
+	if err != nil {
+		return nil, err
+	}
+	if dbinfo.MaxPoolSize > 0 {
+		db.SetMaxOpenConns(dbinfo.MaxPoolSize)
+	}
+	if dbinfo.MaxIdleSize > 0 {
+		db.SetMaxIdleConns(dbinfo.MaxIdleSize)
+	}
+	err = db.Ping()
+	if err != nil {
+		return nil, err
+	}
+	return db, nil
 }
 
 // GenerateDBWithJSONStr 根据数据库配置信息(json字符串)获取数据库操作指针
@@ -96,6 +121,24 @@ func GenerateDBWithJSONStr(dbinfoStr []byte) (*sql.DB, error) {
 	}
 
 	return generateDB(dbInfo)
+}
+
+// Insert 插入一条数据，并返回id
+func Insert(db *sql.DB, sqlStr string, args ...interface{}) (int64, error) {
+	stmt, err := db.Prepare(sqlStr)
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+	ret, err := stmt.Exec(args)
+	if err != nil {
+		return 0, err
+	}
+	id, err := ret.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+	return id, nil
 }
 
 // LoadDatasFromDB 根据sql获取所有数据

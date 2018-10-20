@@ -35,9 +35,14 @@ func reloadHandle(w http.ResponseWriter, req *http.Request, ps httprouter.Params
 	}
 
 	// 重新加载数据
+	db, err := mydb.GetDefaultDB()
+	if err != nil {
+		response.FailJSON(w, err.Error())
+		return
+	}
 	switch module := req.URL.Query().Get("module"); module {
 	case "user":
-		err = privilege.InitUserAndRole(mydb.GetDB(mydb.ThisDataSourceID))
+		err = privilege.InitUserAndRole(db)
 		if err != nil {
 			response.FailJSON(w, err.Error())
 		} else {
@@ -45,7 +50,7 @@ func reloadHandle(w http.ResponseWriter, req *http.Request, ps httprouter.Params
 		}
 
 	case "uri":
-		err = privilege.InitURIPrivileges(mydb.GetDB(mydb.ThisDataSourceID))
+		err = privilege.InitURIPrivileges(db)
 		if err != nil {
 			response.FailJSON(w, err.Error())
 		} else {

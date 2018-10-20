@@ -27,7 +27,7 @@ var nolog = flag.Bool("nolog", false, "Without log")
 var pringVersion = flag.Bool("v", false, "Version info")
 var demon = flag.Bool("d", false, "Help info")
 var help = flag.Bool("h", false, "Help info")
-var configFile = flag.String("config", "", "The database config file(json)")
+var configFile = flag.String("config", "", "The config file(json)")
 var accessControlAllowOrigin = flag.String("Access-Control-Allow-Origin", "", "The http header Access-Control-Allow-Origin")
 
 //Main 提供给通用http服务入口

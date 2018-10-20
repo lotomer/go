@@ -18,7 +18,11 @@ var regexp4param = regexp.MustCompile(`\$\{([^}]+)\}`)
 // 2、参数Mode如果是range，则对应的入参值格式为：起始值,终止值
 func GetAPIDatas(dataID string, inputParams map[string][]string) ([]map[string]interface{}, error) {
 	if config, ok := DataConfigPool[dataID]; ok {
-		sql, db := config.Options.SQL, mydb.GetDB(config.dsID)
+		db, err := mydb.GetDB(config.dsID)
+		if err != nil {
+			return nil, err
+		}
+		sql := config.Options.SQL
 		sql, queryParam, err := generateSQL(sql, inputParams, config.QueryParam)
 		if err != nil {
 			return nil, err

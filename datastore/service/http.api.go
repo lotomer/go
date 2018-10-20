@@ -43,16 +43,21 @@ func dataStoreReloadHandle(w http.ResponseWriter, req *http.Request, ps httprout
 	}
 
 	// 重新加载数据
+	db, err := mydb.GetDefaultDB()
+	if err != nil {
+		response.FailJSON(w, err.Error())
+		return
+	}
 	switch module := req.URL.Query().Get("module"); module {
 	case "datasource":
-		err = datastore.InitDataSource(mydb.GetDB(mydb.ThisDataSourceID))
+		err = datastore.InitDataSource(db)
 		if err != nil {
 			response.FailJSON(w, err.Error())
 		} else {
 			response.SuccessJSON(w, "ok")
 		}
 	case "dataconfig":
-		err = datastore.InitDataConfig(mydb.GetDB(mydb.ThisDataSourceID))
+		err = datastore.InitDataConfig(db)
 		if err != nil {
 			response.FailJSON(w, err.Error())
 		} else {

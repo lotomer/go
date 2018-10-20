@@ -22,7 +22,7 @@ type Meta struct {
 
 // RequestParameter 请求参数
 type RequestParameter struct {
-	Meta
+	Meta Meta `json:"meta"`
 	Page
 	Params json.RawMessage `json:"params"`
 }
