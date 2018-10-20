@@ -123,14 +123,14 @@ func GenerateDBWithJSONStr(dbinfoStr []byte) (*sql.DB, error) {
 	return generateDB(dbInfo)
 }
 
-// Insert 插入一条数据，并返回id
+// Insert 插入一条数据，并返回新增的id
 func Insert(db *sql.DB, sqlStr string, args ...interface{}) (int64, error) {
 	stmt, err := db.Prepare(sqlStr)
 	if err != nil {
 		return 0, err
 	}
 	defer stmt.Close()
-	ret, err := stmt.Exec(args)
+	ret, err := stmt.Exec(args...)
 	if err != nil {
 		return 0, err
 	}
@@ -139,6 +139,53 @@ func Insert(db *sql.DB, sqlStr string, args ...interface{}) (int64, error) {
 		return 0, err
 	}
 	return id, nil
+}
+
+// Exec 执行SQL，并返回影响的记录数
+func Exec(db *sql.DB, sqlStr string, args ...interface{}) (int64, error) {
+	stmt, err := db.Prepare(sqlStr)
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+	ret, err := stmt.Exec(args...)
+	if err != nil {
+		return 0, err
+	}
+	num, err := ret.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return num, nil
+}
+
+// Query 查询
+func Query(db *sql.DB, sqlStr string, args ...interface{}) (*sql.Rows, error) {
+	var (
+		rows *sql.Rows
+		err  error
+	)
+	if len(args) > 0 {
+		// 有附加参数，则先进行预编译，然后再执行
+		stmt, err := db.Prepare(sqlStr)
+		if err != nil {
+			return nil, err
+		}
+		defer stmt.Close()
+		rows, err = stmt.Query(args...)
+		if err != nil {
+			//log.Fatalf("Query failed: %s",err)
+			return nil, err
+		}
+	} else {
+		// 没有附加参数，则直接执行
+		rows, err = db.Query(sqlStr)
+		if err != nil {
+			//log.Fatalf("Query failed: %s",err)
+			return nil, err
+		}
+	}
+	return rows, nil
 }
 
 // LoadDatasFromDB 根据sql获取所有数据
